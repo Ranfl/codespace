@@ -152,7 +152,20 @@ if ('IntersectionObserver' in window && projectRows.length && projectLinks.lengt
     const projectIndexStatus = document.querySelector('.project-index-status');
     if (projectIndexStatus) projectIndexStatus.textContent = `${idx} / ${String(projectRows.length).padStart(2,'0')}`;
     const activeLink = projectLinks.find(link => link.dataset.projectLink === idx);
-    activeLink?.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'nearest', inline: 'center' });
+
+    // Keep the horizontal project index in view without touching the page's
+    // vertical scroll position. scrollIntoView() used to scroll the window as
+    // well, which could interrupt navbar/back-to-top smooth scrolling and make
+    // the page appear to get stuck on a project section.
+    const projectIndexNav = document.querySelector('.project-index-nav');
+    if (activeLink && projectIndexNav && projectIndexNav.scrollWidth > projectIndexNav.clientWidth) {
+      const targetLeft = activeLink.offsetLeft - (projectIndexNav.clientWidth - activeLink.offsetWidth) / 2;
+      projectIndexNav.scrollTo({
+        left: Math.max(0, targetLeft),
+        behavior: reducedMotion ? 'auto' : 'smooth'
+      });
+    }
+
     if (railMeter) {
       const pos = Math.max(1, Number(idx));
       railMeter.style.height = `${(pos / projectRows.length) * 100}%`;
@@ -186,3 +199,29 @@ if (!reducedMotion) {
   }, { passive: true });
   updateScrollMotion();
 }
+
+
+// Stable same-page navigation. We control only the window's vertical movement,
+// so observers and the horizontal project index cannot hijack the destination.
+document.querySelectorAll('a[href^="#"]').forEach(link => {
+  link.addEventListener('click', event => {
+    const hash = link.getAttribute('href');
+    if (!hash || hash === '#') return;
+
+    const target = document.querySelector(hash);
+    if (!target) return;
+
+    event.preventDefault();
+
+    if (hash === '#top') {
+      window.scrollTo({ top: 0, behavior: reducedMotion ? 'auto' : 'smooth' });
+    } else {
+      const styles = window.getComputedStyle(target);
+      const scrollMarginTop = parseFloat(styles.scrollMarginTop) || 0;
+      const top = target.getBoundingClientRect().top + window.scrollY - scrollMarginTop;
+      window.scrollTo({ top: Math.max(0, top), behavior: reducedMotion ? 'auto' : 'smooth' });
+    }
+
+    if (history.replaceState) history.replaceState(null, '', hash);
+  });
+});

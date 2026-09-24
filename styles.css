@@ -736,3 +736,24 @@ summary::after{transition:transform .35s var(--ease-soft)}
   .hero-copy>p:not(.hero-kicker),.hero-links,.hero-metrics,.hero-principles,.motion-reveal,.motion-reveal-left,.motion-reveal-right,.proof-item,.proof-lead,.capability-list>div,.process-list li,.project-row .project-media,.project-row .project-copy{opacity:1!important;transform:none!important}
   .showcase-deck{transform:none!important;box-shadow:0 30px 68px rgba(8,31,49,.15)!important}
 }
+
+/* ===== Stable anchor navigation ===== */
+#top,
+#work,
+#capabilities,
+#process,
+#studio,
+#contact {
+  scroll-margin-top: 110px;
+}
+
+@media (max-width: 760px) {
+  #top,
+  #work,
+  #capabilities,
+  #process,
+  #studio,
+  #contact {
+    scroll-margin-top: 68px;
+  }
+}
